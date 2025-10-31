@@ -1,0 +1,32 @@
+{
+    "terminal.integrated.profiles.windows": {
+        "PowerShell": {
+            "source": "PowerShell",
+            "icon": "terminal-powershell"
+        },
+        "Command Prompt": {
+            "path": [
+                "${env:windir}\\Sysnative\\cmd.exe",
+                "${env:windir}\\System32\\cmd.exe"
+            ],
+            "args": [],
+            "icon": "terminal-cmd"
+        },
+        "Git Bash": {
+            "source": "Git Bash"
+        },
+        "Intel FPGA Embedded Shell": {
+            "path": "cmd.exe",
+            "args": [
+                "/k",
+                "set CHERE_INVOKING=1",
+                "&&",
+                "C:\\intelFPGA\\20.1\\embedded\\Embedded_Command_Shell.bat"
+            ],
+            "icon": "terminal",
+            "color": "terminal.ansiBlue"
+        }
+    },
+    "terminal.integrated.defaultProfile.windows": "Intel FPGA Embedded Shell",
+    "terminal.integrated.cwd": "${workspaceFolder}"
+}
