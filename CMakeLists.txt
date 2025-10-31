@@ -53,7 +53,7 @@ target_link_libraries(tflite_test
     ${CMAKE_SOURCE_DIR}/lib/_deps/ruy-build/ruy/libruy_system_aligned_alloc.a
     ${CMAKE_SOURCE_DIR}/lib/_deps/ruy-build/ruy/libruy_tune.a
     ${CMAKE_SOURCE_DIR}/lib/_deps/ruy-build/ruy/libruy_wait.a
-    C:/Users/yazan/Documents/tflite-compile/tflite-build/pthreadpool/libpthreadpool.a
+    ${CMAKE_SOURCE_DIR}/lib/libpthreadpool.a
     ${CMAKE_SOURCE_DIR}/lib/_deps/cpuinfo-build/libcpuinfo.a
     ${CMAKE_SOURCE_DIR}/lib/_deps/cpuinfo-build/libcpuinfo_internals.a
     ${CMAKE_SOURCE_DIR}/lib/_deps/farmhash-build/libfarmhash.a
