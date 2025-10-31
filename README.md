@@ -17,11 +17,14 @@ This project demonstrates how to cross-compile TensorFlow Lite for ARM architect
 
 ## Cross-Compilation Environment
 
-- **Host OS**: Windows/Linux
+- **Host OS**: Windows with Cygwin
+- **Development Tools**: Intel Embedded Design Suite (EDS) 20.1
 - **Target OS**: Ubuntu 18.04
-- **Toolchain**: arm-linux-gnueabihf-gcc 7.5.0
+- **Toolchain**: arm-linux-gnueabihf-gcc 7.5.0 (included in Intel EDS)
 - **Build System**: CMake 3.10+ with Ninja
 - **C++ Standard**: C++14
+
+> **Note**: This project was developed and tested on Windows using Cygwin and the Intel FPGA Embedded Design Suite 20.1, which includes the ARM cross-compilation toolchain.
 
 ## Prerequisites
 
