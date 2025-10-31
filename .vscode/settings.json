@@ -28,5 +28,10 @@
         }
     },
     "terminal.integrated.defaultProfile.windows": "Intel FPGA Embedded Shell",
-    "terminal.integrated.cwd": "${workspaceFolder}"
+    "terminal.integrated.cwd": "${workspaceFolder}",
+    "cmake.configureArgs": [
+        "-DCMAKE_TOOLCHAIN_FILE=${workspaceFolder}/arm-gcc-toolchain.cmake"
+    ],
+    "cmake.generator": "Ninja",
+    "cmake.configureSettings": {}
 }
