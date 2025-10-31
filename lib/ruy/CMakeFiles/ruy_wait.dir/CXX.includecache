@@ -1,0 +1,36 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/workspace/tensorflow/tensorflow/lite/build/ruy/ruy/wait.cc
+ruy/wait.h
+/workspace/tensorflow/tensorflow/lite/build/ruy/ruy/ruy/wait.h
+chrono
+-
+
+ruy/ruy/time.h
+chrono
+-
+cstdint
+-
+ratio
+-
+sys/time.h
+-
+ctime
+-
+
+ruy/ruy/wait.h
+condition_variable
+-
+functional
+-
+mutex
+-
+ruy/time.h
+ruy/ruy/ruy/time.h
+

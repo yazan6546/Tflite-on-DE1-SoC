@@ -1,0 +1,24 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/workspace/tensorflow/tensorflow/lite/build/ruy/ruy/have_built_path_for_avx.cc
+ruy/have_built_path_for.h
+/workspace/tensorflow/tensorflow/lite/build/ruy/ruy/ruy/have_built_path_for.h
+ruy/opt_set.h
+/workspace/tensorflow/tensorflow/lite/build/ruy/ruy/ruy/opt_set.h
+
+ruy/ruy/have_built_path_for.h
+ruy/platform.h
+ruy/ruy/ruy/platform.h
+
+ruy/ruy/opt_set.h
+
+ruy/ruy/platform.h
+android/ndk-version.h
+-
+

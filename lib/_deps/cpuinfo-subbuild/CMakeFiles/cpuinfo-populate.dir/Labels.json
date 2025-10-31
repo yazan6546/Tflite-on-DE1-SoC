@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/workspace/tensorflow/tensorflow/lite/build/_deps/cpuinfo-subbuild/CMakeFiles/cpuinfo-populate"
+		},
+		{
+			"file" : "/workspace/tensorflow/tensorflow/lite/build/_deps/cpuinfo-subbuild/CMakeFiles/cpuinfo-populate.rule"
+		},
+		{
+			"file" : "/workspace/tensorflow/tensorflow/lite/build/_deps/cpuinfo-subbuild/CMakeFiles/cpuinfo-populate-complete.rule"
+		},
+		{
+			"file" : "/workspace/tensorflow/tensorflow/lite/build/_deps/cpuinfo-subbuild/cpuinfo-populate-prefix/src/cpuinfo-populate-stamp/cpuinfo-populate-install.rule"
+		},
+		{
+			"file" : "/workspace/tensorflow/tensorflow/lite/build/_deps/cpuinfo-subbuild/cpuinfo-populate-prefix/src/cpuinfo-populate-stamp/cpuinfo-populate-mkdir.rule"
+		},
+		{
+			"file" : "/workspace/tensorflow/tensorflow/lite/build/_deps/cpuinfo-subbuild/cpuinfo-populate-prefix/src/cpuinfo-populate-stamp/cpuinfo-populate-download.rule"
+		},
+		{
+			"file" : "/workspace/tensorflow/tensorflow/lite/build/_deps/cpuinfo-subbuild/cpuinfo-populate-prefix/src/cpuinfo-populate-stamp/cpuinfo-populate-update.rule"
+		},
+		{
+			"file" : "/workspace/tensorflow/tensorflow/lite/build/_deps/cpuinfo-subbuild/cpuinfo-populate-prefix/src/cpuinfo-populate-stamp/cpuinfo-populate-patch.rule"
+		},
+		{
+			"file" : "/workspace/tensorflow/tensorflow/lite/build/_deps/cpuinfo-subbuild/cpuinfo-populate-prefix/src/cpuinfo-populate-stamp/cpuinfo-populate-configure.rule"
+		},
+		{
+			"file" : "/workspace/tensorflow/tensorflow/lite/build/_deps/cpuinfo-subbuild/cpuinfo-populate-prefix/src/cpuinfo-populate-stamp/cpuinfo-populate-build.rule"
+		},
+		{
+			"file" : "/workspace/tensorflow/tensorflow/lite/build/_deps/cpuinfo-subbuild/cpuinfo-populate-prefix/src/cpuinfo-populate-stamp/cpuinfo-populate-test.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"cpuinfo-populate"
+		],
+		"name" : "cpuinfo-populate"
+	}
+}

@@ -1,0 +1,14 @@
+# Target labels
+ abseil-cpp-populate
+# Source files and their labels
+/workspace/tensorflow/tensorflow/lite/build/_deps/abseil-cpp-subbuild/CMakeFiles/abseil-cpp-populate
+/workspace/tensorflow/tensorflow/lite/build/_deps/abseil-cpp-subbuild/CMakeFiles/abseil-cpp-populate.rule
+/workspace/tensorflow/tensorflow/lite/build/_deps/abseil-cpp-subbuild/CMakeFiles/abseil-cpp-populate-complete.rule
+/workspace/tensorflow/tensorflow/lite/build/src/abseil-cpp-populate-stamp/abseil-cpp-populate-install.rule
+/workspace/tensorflow/tensorflow/lite/build/src/abseil-cpp-populate-stamp/abseil-cpp-populate-mkdir.rule
+/workspace/tensorflow/tensorflow/lite/build/src/abseil-cpp-populate-stamp/abseil-cpp-populate-download.rule
+/workspace/tensorflow/tensorflow/lite/build/src/abseil-cpp-populate-stamp/abseil-cpp-populate-update.rule
+/workspace/tensorflow/tensorflow/lite/build/src/abseil-cpp-populate-stamp/abseil-cpp-populate-patch.rule
+/workspace/tensorflow/tensorflow/lite/build/src/abseil-cpp-populate-stamp/abseil-cpp-populate-configure.rule
+/workspace/tensorflow/tensorflow/lite/build/src/abseil-cpp-populate-stamp/abseil-cpp-populate-build.rule
+/workspace/tensorflow/tensorflow/lite/build/src/abseil-cpp-populate-stamp/abseil-cpp-populate-test.rule

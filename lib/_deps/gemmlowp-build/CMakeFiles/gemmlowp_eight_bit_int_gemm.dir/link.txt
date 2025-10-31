@@ -1,0 +1,2 @@
+/usr/bin/ar qc libgemmlowp_eight_bit_int_gemm.a CMakeFiles/gemmlowp_eight_bit_int_gemm.dir/__/__/gemmlowp/eight_bit_int_gemm/eight_bit_int_gemm.cc.o
+/usr/bin/ranlib libgemmlowp_eight_bit_int_gemm.a

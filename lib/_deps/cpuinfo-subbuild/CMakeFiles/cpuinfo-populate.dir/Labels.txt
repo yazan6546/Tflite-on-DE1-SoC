@@ -1,0 +1,14 @@
+# Target labels
+ cpuinfo-populate
+# Source files and their labels
+/workspace/tensorflow/tensorflow/lite/build/_deps/cpuinfo-subbuild/CMakeFiles/cpuinfo-populate
+/workspace/tensorflow/tensorflow/lite/build/_deps/cpuinfo-subbuild/CMakeFiles/cpuinfo-populate.rule
+/workspace/tensorflow/tensorflow/lite/build/_deps/cpuinfo-subbuild/CMakeFiles/cpuinfo-populate-complete.rule
+/workspace/tensorflow/tensorflow/lite/build/_deps/cpuinfo-subbuild/cpuinfo-populate-prefix/src/cpuinfo-populate-stamp/cpuinfo-populate-install.rule
+/workspace/tensorflow/tensorflow/lite/build/_deps/cpuinfo-subbuild/cpuinfo-populate-prefix/src/cpuinfo-populate-stamp/cpuinfo-populate-mkdir.rule
+/workspace/tensorflow/tensorflow/lite/build/_deps/cpuinfo-subbuild/cpuinfo-populate-prefix/src/cpuinfo-populate-stamp/cpuinfo-populate-download.rule
+/workspace/tensorflow/tensorflow/lite/build/_deps/cpuinfo-subbuild/cpuinfo-populate-prefix/src/cpuinfo-populate-stamp/cpuinfo-populate-update.rule
+/workspace/tensorflow/tensorflow/lite/build/_deps/cpuinfo-subbuild/cpuinfo-populate-prefix/src/cpuinfo-populate-stamp/cpuinfo-populate-patch.rule
+/workspace/tensorflow/tensorflow/lite/build/_deps/cpuinfo-subbuild/cpuinfo-populate-prefix/src/cpuinfo-populate-stamp/cpuinfo-populate-configure.rule
+/workspace/tensorflow/tensorflow/lite/build/_deps/cpuinfo-subbuild/cpuinfo-populate-prefix/src/cpuinfo-populate-stamp/cpuinfo-populate-build.rule
+/workspace/tensorflow/tensorflow/lite/build/_deps/cpuinfo-subbuild/cpuinfo-populate-prefix/src/cpuinfo-populate-stamp/cpuinfo-populate-test.rule

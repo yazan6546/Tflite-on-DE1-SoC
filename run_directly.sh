@@ -1,0 +1,1 @@
+ssh -l knat 192.168.1.123 './tflite_test'

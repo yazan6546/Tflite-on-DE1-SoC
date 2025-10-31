@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/workspace/tensorflow/tensorflow/lite/build/_deps/eigen-subbuild/CMakeFiles/eigen-populate"
+		},
+		{
+			"file" : "/workspace/tensorflow/tensorflow/lite/build/_deps/eigen-subbuild/CMakeFiles/eigen-populate.rule"
+		},
+		{
+			"file" : "/workspace/tensorflow/tensorflow/lite/build/_deps/eigen-subbuild/CMakeFiles/eigen-populate-complete.rule"
+		},
+		{
+			"file" : "/workspace/tensorflow/tensorflow/lite/build/src/eigen-populate-stamp/eigen-populate-install.rule"
+		},
+		{
+			"file" : "/workspace/tensorflow/tensorflow/lite/build/src/eigen-populate-stamp/eigen-populate-mkdir.rule"
+		},
+		{
+			"file" : "/workspace/tensorflow/tensorflow/lite/build/src/eigen-populate-stamp/eigen-populate-download.rule"
+		},
+		{
+			"file" : "/workspace/tensorflow/tensorflow/lite/build/src/eigen-populate-stamp/eigen-populate-update.rule"
+		},
+		{
+			"file" : "/workspace/tensorflow/tensorflow/lite/build/src/eigen-populate-stamp/eigen-populate-patch.rule"
+		},
+		{
+			"file" : "/workspace/tensorflow/tensorflow/lite/build/src/eigen-populate-stamp/eigen-populate-configure.rule"
+		},
+		{
+			"file" : "/workspace/tensorflow/tensorflow/lite/build/src/eigen-populate-stamp/eigen-populate-build.rule"
+		},
+		{
+			"file" : "/workspace/tensorflow/tensorflow/lite/build/src/eigen-populate-stamp/eigen-populate-test.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"eigen-populate"
+		],
+		"name" : "eigen-populate"
+	}
+}

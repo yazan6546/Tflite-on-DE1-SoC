@@ -1,0 +1,22 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/workspace/tensorflow/tensorflow/lite/build/ruy/ruy/system_aligned_alloc.cc
+ruy/system_aligned_alloc.h
+/workspace/tensorflow/tensorflow/lite/build/ruy/ruy/ruy/system_aligned_alloc.h
+cstddef
+-
+cstdlib
+-
+malloc.h
+-
+
+ruy/ruy/system_aligned_alloc.h
+cstddef
+-
+

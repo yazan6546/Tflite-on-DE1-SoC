@@ -1,0 +1,18 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/workspace/tensorflow/tensorflow/lite/build/fft2d/alloc.c
+alloc.h
+/workspace/tensorflow/tensorflow/lite/build/fft2d/alloc.h
+
+/workspace/tensorflow/tensorflow/lite/build/fft2d/alloc.h
+stdlib.h
+-
+stdio.h
+-
+
