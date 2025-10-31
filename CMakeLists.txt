@@ -5,13 +5,11 @@ project(TFLiteTest CXX)
 # (pass via command line: -DCMAKE_TOOLCHAIN_FILE=../armv7-de1-toolchain.cmake)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(TF_SRC_DIR "C:/Users/yazan/Documents/tflite-compile/tensorflow")
 
 # Add your source file
 add_executable(tflite_test tflite.cpp)
 target_include_directories(
-    tflite_test PUBLIC flatbuffers 
-    ${TF_SRC_DIR}
+    tflite_test PUBLIC include 
     
 )
 # Link static libraries (use full paths)
