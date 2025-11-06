@@ -21,6 +21,8 @@ set(CMAKE_ASM_COMPILER ${CMAKE_C_COMPILER})
 set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PREFIX}g++)
 set(CMAKE_AR ${TOOLCHAIN_PREFIX}gcc-ar)
 set(CMAKE_RANLIB ${TOOLCHAIN_PREFIX}gcc-ranlib)
+set(CMAKE_CROSSCOMPILING TRUE)
+
 
 execute_process(COMMAND ${CMAKE_C_COMPILER} -print-sysroot
     OUTPUT_VARIABLE ARM_GCC_SYSROOT OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -28,7 +30,13 @@ execute_process(COMMAND ${CMAKE_C_COMPILER} -print-sysroot
 
 # set coommon compilation flags for DE1-SoC
 # Cortex-A9, ARMv7-A, NEON + VFPv3, hard float ABI, optimization, PIC
-set(COMMON_FLAGS "-march=armv7-a -mtune=cortex-a9 -mfpu=neon -mfloat-abi=hard -O3 -fPIC")
+set(COMMON_FLAGS "-march=armv7-a -mtune=cortex-a9 -mfpu=neon -mfloat-abi=hard -fPIC")
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(COMMON_FLAGS "${COMMON_FLAGS} -O0 -g3 -DDEBUG")
+else ()
+    set(COMMON_FLAGS "${COMMON_FLAGS} -O3 -DNDEBUG")
+endif ()
 
 # 4. Set flags for C and C++ compilers
 set(CMAKE_C_FLAGS   "${COMMON_FLAGS}" CACHE STRING "" FORCE)
