@@ -33,5 +33,10 @@
         "-DCMAKE_TOOLCHAIN_FILE=${workspaceFolder}/arm-gcc-toolchain.cmake"
     ],
     "cmake.generator": "Ninja",
-    "cmake.configureSettings": {}
+    "cmake.configureSettings": {},
+    "files.associations": {
+        "*.do": "tcl",
+        "chrono": "cpp",
+        "algorithm": "cpp"
+    }
 }

@@ -7,7 +7,7 @@
 #include "tensorflow/lite/model.h"
 
 int main() {
-    const char* model_path = "models/model.tflite";
+    const char* model_path = "models/yolov4-tiny-416.tflite";
 
     // Load model
     std::unique_ptr<tflite::FlatBufferModel> model =
