@@ -28,7 +28,7 @@ execute_process(COMMAND ${CMAKE_C_COMPILER} -print-sysroot
     OUTPUT_VARIABLE ARM_GCC_SYSROOT OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 
-# set coommon compilation flags for DE1-SoC
+# set common compilation flags for DE1-SoC
 # Cortex-A9, ARMv7-A, NEON + VFPv3, hard float ABI, optimization, PIC
 set(COMMON_FLAGS "-march=armv7-a -mtune=cortex-a9 -mfpu=neon -mfloat-abi=hard -fPIC")
 
