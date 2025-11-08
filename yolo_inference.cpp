@@ -119,20 +119,25 @@ static void copy_to_float_input(
     resize_bilinear_rgb_u8_to_float(src_rgb_u8, sw, sh, sc, dst, dw, dh);
 }
 
-// Decode one YOLO head (grid x grid x 3 x (5+num_classes))
-static void decode_head(const float* out, int grid, int input_w, int input_h,
-                        int orig_w, int orig_h, int anchor_offset,
-                        std::vector<Detection>& dets)
+// Decode one YOLO head with flattened format [grid, grid, 3*(5+num_classes)]
+static void decode_head_flattened(const float* out, int grid, int input_w, int input_h,
+                                   int orig_w, int orig_h, int anchor_offset,
+                                   std::vector<Detection>& dets)
 {
     const int stride = (5 + NUM_CLASSES);
-    // scale from network (416) to original image
+    const int channels_per_cell = 3 * stride; // 3 anchors * 85 = 255
+    
     float scale_x = (float)orig_w;
     float scale_y = (float)orig_h;
 
     for (int gy = 0; gy < grid; ++gy) {
         for (int gx = 0; gx < grid; ++gx) {
+            // For flattened format: [grid, grid, 255]
+            int cell_offset = (gy * grid + gx) * channels_per_cell;
+            
             for (int a = 0; a < 3; ++a) {
-                int idx = (((gy * grid + gx) * 3) + a) * stride;
+                int anchor_offset_in_cell = a * stride;
+                int idx = cell_offset + anchor_offset_in_cell;
 
                 float tx = out[idx + 0];
                 float ty = out[idx + 1];
@@ -148,10 +153,9 @@ static void decode_head(const float* out, int grid, int input_w, int input_h,
 
                 float pw = ANCHORS[anchor_offset + a][0];
                 float ph = ANCHORS[anchor_offset + a][1];
-                float bw = (pw * std::exp(tw)) / input_w; // normalized
+                float bw = (pw * std::exp(tw)) / input_w;
                 float bh = (ph * std::exp(th)) / input_h;
 
-                // class
                 int best_c = -1;
                 float best_p = 0.f;
                 for (int c = 0; c < NUM_CLASSES; ++c) {
@@ -161,7 +165,66 @@ static void decode_head(const float* out, int grid, int input_w, int input_h,
                 float score = objectness * best_p;
                 if (score < CONF_THRESH) continue;
 
-                // normalized center/size -> pixel x1,y1,x2,y2 (original image)
+                float x = cx * scale_x;
+                float y = cy * scale_y;
+                float w = bw * scale_x;
+                float h = bh * scale_y;
+
+                Detection d;
+                d.x1 = std::max(0.f, x - w * 0.5f);
+                d.y1 = std::max(0.f, y - h * 0.5f);
+                d.x2 = std::min((float)orig_w - 1, x + w * 0.5f);
+                d.y2 = std::min((float)orig_h - 1, y + h * 0.5f);
+                d.class_id = best_c;
+                d.score = score;
+                dets.push_back(d);
+            }
+        }
+    }
+}
+
+// Decode one YOLO head with separated format [grid, grid, 3, (5+num_classes)]
+static void decode_head_separated(const float* out, int grid, int input_w, int input_h,
+                                   int orig_w, int orig_h, int anchor_offset,
+                                   std::vector<Detection>& dets)
+{
+    const int stride = (5 + NUM_CLASSES);
+    
+    float scale_x = (float)orig_w;
+    float scale_y = (float)orig_h;
+
+    for (int gy = 0; gy < grid; ++gy) {
+        for (int gx = 0; gx < grid; ++gx) {
+            for (int a = 0; a < 3; ++a) {
+                // For separated format: [grid, grid, 3, 85]
+                int idx = ((gy * grid + gx) * 3 + a) * stride;
+
+                float tx = out[idx + 0];
+                float ty = out[idx + 1];
+                float tw = out[idx + 2];
+                float th = out[idx + 3];
+                float to = out[idx + 4];
+
+                float objectness = sigmoid(to);
+                if (objectness < CONF_THRESH) continue;
+
+                float cx = (sigmoid(tx) + gx) / grid;
+                float cy = (sigmoid(ty) + gy) / grid;
+
+                float pw = ANCHORS[anchor_offset + a][0];
+                float ph = ANCHORS[anchor_offset + a][1];
+                float bw = (pw * std::exp(tw)) / input_w;
+                float bh = (ph * std::exp(th)) / input_h;
+
+                int best_c = -1;
+                float best_p = 0.f;
+                for (int c = 0; c < NUM_CLASSES; ++c) {
+                    float pc = sigmoid(out[idx + 5 + c]);
+                    if (pc > best_p) { best_p = pc; best_c = c; }
+                }
+                float score = objectness * best_p;
+                if (score < CONF_THRESH) continue;
+
                 float x = cx * scale_x;
                 float y = cy * scale_y;
                 float w = bw * scale_x;
@@ -249,14 +312,20 @@ int main(int argc, char** argv) {
         stbi_image_free(img); return 1;
     }
 
-    // Fill input (float or uint8)
+    // Fill input - TensorFlow Lite handles quantization automatically
     if (input->type == kTfLiteFloat32) {
         float* in = interpreter->typed_tensor<float>(input_idx);
         copy_to_float_input(img, iw, ih, ic, in, INPUT_W, INPUT_H);
     } else if (input->type == kTfLiteUInt8) {
+        // For quantized models, still input as float and let TFLite handle conversion
         uint8_t* in = interpreter->typed_tensor<uint8_t>(input_idx);
-        copy_to_quant_input(img, iw, ih, ic, in, INPUT_W, INPUT_H,
-                            input->params.zero_point, input->params.scale);
+        // Simple direct copy with normalization
+        std::vector<float> tmp(INPUT_W * INPUT_H * 3);
+        copy_to_float_input(img, iw, ih, ic, tmp.data(), INPUT_W, INPUT_H);
+        // Convert to uint8 directly (0-255 range)
+        for (size_t i = 0; i < tmp.size(); ++i) {
+            in[i] = static_cast<uint8_t>(tmp[i] * 255.0f);
+        }
     } else {
         std::cerr << "Unsupported input type\n";
         stbi_image_free(img); return 1;
@@ -267,23 +336,55 @@ int main(int argc, char** argv) {
         std::cerr << "Invoke failed\n"; stbi_image_free(img); return 1;
     }
 
-    // Expect 2 outputs: [1,13,13,3,5+C] and [1,26,26,3,5+C]
+    // Expect 2 outputs: [1,13,13,255] and [1,26,26,255] for 80 classes
+    // Output is already dequantized by TensorFlow Lite
     const TfLiteTensor* out0 = interpreter->output_tensor(0);
     const TfLiteTensor* out1 = interpreter->output_tensor(1);
-    auto o0 = get_output_as_floats(out0);
-    auto o1 = get_output_as_floats(out1);
+    
+    // Get outputs as floats - TFLite already handles dequantization
+    std::vector<float> o0, o1;
+    if (out0->type == kTfLiteFloat32) {
+        const float* p = reinterpret_cast<const float*>(out0->data.raw);
+        o0.assign(p, p + GetTensorElementCount(out0));
+    } else {
+        o0 = get_output_as_floats(out0);
+    }
+    
+    if (out1->type == kTfLiteFloat32) {
+        const float* p = reinterpret_cast<const float*>(out1->data.raw);
+        o1.assign(p, p + GetTensorElementCount(out1));
+    } else {
+        o1 = get_output_as_floats(out1);
+    }
+    
+    std::printf("Output 0 size: %zu, Output 1 size: %zu\n", o0.size(), o1.size());
 
     // Decode
     std::vector<Detection> dets;
-    // out tensors are laid out in NHWKC or NHWC? Tiny-YOLOv4 TFLite often packs as [1, G, G, 3*(5+C)]
-    // Many conversions produce [1, G, G, 3, 5+C]. If flat, ensure stride matches.
-    // We assume it's flattened in the order used in decode_head above (GxGx3x(5+C)).
-    // If your converter packed as [1, G, G, 3*(5+C)], rearrange accordingly.
-
-    // 13x13 head
-    decode_head(o0.data(), 13, INPUT_W, INPUT_H, iw, ih, /*anchor_offset=*/0, dets);
-    // 26x26 head
-    decode_head(o1.data(), 26, INPUT_W, INPUT_H, iw, ih, /*anchor_offset=*/3, dets);
+    
+    // Print actual tensor shapes to understand layout
+    std::printf("Output 0 dims: [");
+    for (int i = 0; i < out0->dims->size; ++i) {
+        std::printf("%d", out0->dims->data[i]);
+        if (i < out0->dims->size - 1) std::printf(", ");
+    }
+    std::printf("]\n");
+    
+    std::printf("Output 1 dims: [");
+    for (int i = 0; i < out1->dims->size; ++i) {
+        std::printf("%d", out1->dims->data[i]);
+        if (i < out1->dims->size - 1) std::printf(", ");
+    }
+    std::printf("]\n");
+    
+    // Output 0: [1, 26, 26, 255] - flattened 26x26 grid with anchor_offset=3
+    // Output 1: [1, 13, 13, 3, 85] - separated 13x13 grid with anchor_offset=0
+    
+    std::printf("Decoding 26x26 head (flattened format)...\n");
+    decode_head_flattened(o0.data(), 26, INPUT_W, INPUT_H, iw, ih, /*anchor_offset=*/3, dets);
+    
+    std::printf("Decoding 13x13 head (separated format)...\n");
+    decode_head_separated(o1.data(), 13, INPUT_W, INPUT_H, iw, ih, /*anchor_offset=*/0, dets);
 
     // NMS
     nms(dets, NMS_IOU_THRESH);
