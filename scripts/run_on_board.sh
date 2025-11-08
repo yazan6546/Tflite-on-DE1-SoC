@@ -16,4 +16,4 @@ if [ "$BUILD_TYPE"=="Debug" ]; then
 fi
 
 scp cmake-build-${BUILD_TYPE}/tflite_test knat@192.168.1.123:${REMOTE_DIR}/${BUILD_TYPE}/
-ssh knat@192.168.1.123 "cd ${REMOTE_DIR} && chmod +x ./tflite_test && ./$BUILD_TYPE/tflite_test"
+ssh knat@192.168.1.123 "cd ${REMOTE_DIR} && chmod +x $BUILD_TYPE/tflite_test && ./$BUILD_TYPE/tflite_test"
