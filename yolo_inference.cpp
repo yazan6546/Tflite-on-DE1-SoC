@@ -7,6 +7,7 @@
 #include <vector>
 #include <algorithm>
 #include <memory>
+#include <chrono>
 #include <iostream>
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -119,112 +120,51 @@ static void copy_to_float_input(
     resize_bilinear_rgb_u8_to_float(src_rgb_u8, sw, sh, sc, dst, dw, dh);
 }
 
-// Decode one YOLO head with flattened format [grid, grid, 3*(5+num_classes)]
-static void decode_head_flattened(const float* out, int grid, int input_w, int input_h,
-                                   int orig_w, int orig_h, int anchor_offset,
-                                   std::vector<Detection>& dets)
+// Simplified unified decode function that handles both layouts
+static void decode_yolo_output(const float* out, int grid, int input_w, int input_h,
+                                int orig_w, int orig_h, int anchor_offset, 
+                                bool is_flattened, std::vector<Detection>& dets)
 {
     const int stride = (5 + NUM_CLASSES);
-    const int channels_per_cell = 3 * stride; // 3 anchors * 85 = 255
-    
-    float scale_x = (float)orig_w;
-    float scale_y = (float)orig_h;
-
-    for (int gy = 0; gy < grid; ++gy) {
-        for (int gx = 0; gx < grid; ++gx) {
-            // For flattened format: [grid, grid, 255]
-            int cell_offset = (gy * grid + gx) * channels_per_cell;
-            
-            for (int a = 0; a < 3; ++a) {
-                int anchor_offset_in_cell = a * stride;
-                int idx = cell_offset + anchor_offset_in_cell;
-
-                float tx = out[idx + 0];
-                float ty = out[idx + 1];
-                float tw = out[idx + 2];
-                float th = out[idx + 3];
-                float to = out[idx + 4];
-
-                float objectness = sigmoid(to);
-                if (objectness < CONF_THRESH) continue;
-
-                float cx = (sigmoid(tx) + gx) / grid;
-                float cy = (sigmoid(ty) + gy) / grid;
-
-                float pw = ANCHORS[anchor_offset + a][0];
-                float ph = ANCHORS[anchor_offset + a][1];
-                float bw = (pw * std::exp(tw)) / input_w;
-                float bh = (ph * std::exp(th)) / input_h;
-
-                int best_c = -1;
-                float best_p = 0.f;
-                for (int c = 0; c < NUM_CLASSES; ++c) {
-                    float pc = sigmoid(out[idx + 5 + c]);
-                    if (pc > best_p) { best_p = pc; best_c = c; }
-                }
-                float score = objectness * best_p;
-                if (score < CONF_THRESH) continue;
-
-                float x = cx * scale_x;
-                float y = cy * scale_y;
-                float w = bw * scale_x;
-                float h = bh * scale_y;
-
-                Detection d;
-                d.x1 = std::max(0.f, x - w * 0.5f);
-                d.y1 = std::max(0.f, y - h * 0.5f);
-                d.x2 = std::min((float)orig_w - 1, x + w * 0.5f);
-                d.y2 = std::min((float)orig_h - 1, y + h * 0.5f);
-                d.class_id = best_c;
-                d.score = score;
-                dets.push_back(d);
-            }
-        }
-    }
-}
-
-// Decode one YOLO head with separated format [grid, grid, 3, (5+num_classes)]
-static void decode_head_separated(const float* out, int grid, int input_w, int input_h,
-                                   int orig_w, int orig_h, int anchor_offset,
-                                   std::vector<Detection>& dets)
-{
-    const int stride = (5 + NUM_CLASSES);
-    
     float scale_x = (float)orig_w;
     float scale_y = (float)orig_h;
 
     for (int gy = 0; gy < grid; ++gy) {
         for (int gx = 0; gx < grid; ++gx) {
             for (int a = 0; a < 3; ++a) {
-                // For separated format: [grid, grid, 3, 85]
-                int idx = ((gy * grid + gx) * 3 + a) * stride;
+                // Calculate index based on layout
+                int idx;
+                if (is_flattened) {
+                    // Flattened: [grid, grid, 3*stride]
+                    idx = (gy * grid + gx) * (3 * stride) + a * stride;
+                } else {
+                    // Separated: [grid, grid, 3, stride]
+                    idx = ((gy * grid + gx) * 3 + a) * stride;
+                }
 
-                float tx = out[idx + 0];
-                float ty = out[idx + 1];
-                float tw = out[idx + 2];
-                float th = out[idx + 3];
-                float to = out[idx + 4];
-
-                float objectness = sigmoid(to);
+                float objectness = sigmoid(out[idx + 4]);
                 if (objectness < CONF_THRESH) continue;
 
-                float cx = (sigmoid(tx) + gx) / grid;
-                float cy = (sigmoid(ty) + gy) / grid;
-
+                // Decode box coordinates
+                float cx = (sigmoid(out[idx + 0]) + gx) / grid;
+                float cy = (sigmoid(out[idx + 1]) + gy) / grid;
                 float pw = ANCHORS[anchor_offset + a][0];
                 float ph = ANCHORS[anchor_offset + a][1];
-                float bw = (pw * std::exp(tw)) / input_w;
-                float bh = (ph * std::exp(th)) / input_h;
+                float bw = (pw * std::exp(out[idx + 2])) / input_w;
+                float bh = (ph * std::exp(out[idx + 3])) / input_h;
 
+                // Find best class
                 int best_c = -1;
                 float best_p = 0.f;
                 for (int c = 0; c < NUM_CLASSES; ++c) {
                     float pc = sigmoid(out[idx + 5 + c]);
                     if (pc > best_p) { best_p = pc; best_c = c; }
                 }
+                
                 float score = objectness * best_p;
                 if (score < CONF_THRESH) continue;
 
+                // Convert to pixel coordinates
                 float x = cx * scale_x;
                 float y = cy * scale_y;
                 float w = bw * scale_x;
@@ -331,10 +271,20 @@ int main(int argc, char** argv) {
         stbi_image_free(img); return 1;
     }
 
-    // Inference
+    // Inference with timing
+    std::printf("\n🚀 Running inference...\n");
+    auto start = std::chrono::high_resolution_clock::now();
+    
     if (interpreter->Invoke() != kTfLiteOk) {
         std::cerr << "Invoke failed\n"; stbi_image_free(img); return 1;
     }
+    
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    float fps = 1000.0f / duration_ms.count();
+    
+    std::printf("✅ Inference completed\n");
+    std::printf("⏱️  Inference time: %ld ms (%.2f FPS)\n", duration_ms.count(), fps);
 
     // Expect 2 outputs: [1,13,13,255] and [1,26,26,255] for 80 classes
     // Output is already dequantized by TensorFlow Lite
@@ -362,41 +312,47 @@ int main(int argc, char** argv) {
     // Decode
     std::vector<Detection> dets;
     
-    // Print actual tensor shapes to understand layout
-    std::printf("Output 0 dims: [");
-    for (int i = 0; i < out0->dims->size; ++i) {
-        std::printf("%d", out0->dims->data[i]);
-        if (i < out0->dims->size - 1) std::printf(", ");
-    }
-    std::printf("]\n");
+    std::printf("\n📦 Decoding outputs...\n");
+    std::printf("Output 0: [1, 26, 26, 255] - Decoding 26x26 grid (flattened)\n");
+    std::printf("Output 1: [1, 13, 13, 3, 85] - Decoding 13x13 grid (separated)\n");
     
-    std::printf("Output 1 dims: [");
-    for (int i = 0; i < out1->dims->size; ++i) {
-        std::printf("%d", out1->dims->data[i]);
-        if (i < out1->dims->size - 1) std::printf(", ");
-    }
-    std::printf("]\n");
+    decode_yolo_output(o0.data(), 26, INPUT_W, INPUT_H, iw, ih, 3, true, dets);
+    decode_yolo_output(o1.data(), 13, INPUT_W, INPUT_H, iw, ih, 0, false, dets);
     
-    // Output 0: [1, 26, 26, 255] - flattened 26x26 grid with anchor_offset=3
-    // Output 1: [1, 13, 13, 3, 85] - separated 13x13 grid with anchor_offset=0
-    
-    std::printf("Decoding 26x26 head (flattened format)...\n");
-    decode_head_flattened(o0.data(), 26, INPUT_W, INPUT_H, iw, ih, /*anchor_offset=*/3, dets);
-    
-    std::printf("Decoding 13x13 head (separated format)...\n");
-    decode_head_separated(o1.data(), 13, INPUT_W, INPUT_H, iw, ih, /*anchor_offset=*/0, dets);
+    std::printf("Total detections before NMS: %zu\n", dets.size());
 
     // NMS
     nms(dets, NMS_IOU_THRESH);
+    
+    // Count final detections
+    int final_count = 0;
+    for (const auto& d : dets) {
+        if (!d.suppressed && d.score >= CONF_THRESH) final_count++;
+    }
+    std::printf("Detections after NMS: %d\n", final_count);
 
     // Print results
+    std::printf("\n🎯 Detection Results:\n");
+    std::printf("%-8s %-12s %-40s\n", "Class", "Confidence", "Bounding Box [x1, y1, x2, y2]");
+    std::printf("%s\n", std::string(70, '-').c_str());
+    
     for (const auto& d : dets) {
         if (d.suppressed) continue;
         if (d.score < CONF_THRESH) continue;
-        std::printf("class=%d score=%.3f box=[%d,%d,%d,%d]\n",
-            d.class_id, d.score,
+        std::printf("%-8d %.2f%%       [%4d, %4d, %4d, %4d]\n",
+            d.class_id, d.score * 100.0f,
             (int)d.x1, (int)d.y1, (int)d.x2, (int)d.y2);
     }
+    
+    // Summary
+    std::cout << std::string(70, '=') << std::endl;
+    std::printf("📊 Summary:\n");
+    std::printf("  Image: %s (%dx%d)\n", image_path.c_str(), iw, ih);
+    std::printf("  Detections: %d objects found\n", final_count);
+    std::printf("  Inference time: %ld ms (%.2f FPS)\n", duration_ms.count(), fps);
+    std::printf("  Confidence threshold: %.2f\n", CONF_THRESH);
+    std::printf("  NMS IoU threshold: %.2f\n", NMS_IOU_THRESH);
+    std::cout << std::string(70, '=') << std::endl;
 
     stbi_image_free(img);
     return 0;
